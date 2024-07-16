@@ -26,7 +26,7 @@ class Deck {
 }
 
 class Player extends PlayerState {
-  Player(String name) : super("TODO", name, []);
+  Player(String id, String name) : super(id, name, []);
 
   void playCard(GameCard card) {
     hand.remove(card);
@@ -50,7 +50,7 @@ class CardOnTable {
 
 class Game with ChangeNotifier {
   Game(List<String> playerNames)
-      : players = playerNames.map((name) => Player(name)).toList(),
+      : players = playerNames.indexed.map((it) => Player(it.$1.toString(), it.$2)).toList(),
         initialPlayerIndex = 0 {
     startNewRound(incrementRound: false);
   }
@@ -258,6 +258,18 @@ class Game with ChangeNotifier {
   }
 
   void _nextPlayer() => currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+
+  void onMessage(GameMessageClient message) {
+    var _ = switch (message) {
+      PlayCard() => playCard(currentPlayer, message.card),
+      StartNewRound() => startNewRound(incrementRound: true),
+      ShuffleDeck() => shuffleAndGiveCards(),
+      SetTrumpColor() => setTrumpColor(message.color),
+      SetBid() => setBid(currentPlayer, message.bid),
+      ReadyForNextTrick() => readyForNextTrick(),
+      LeaveGame() => stop(),
+    };
+  }
 }
 
 class GameScore {
