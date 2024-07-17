@@ -1,3 +1,5 @@
+import 'package:sorcerers_core/utils.dart';
+
 sealed class GameCard {
   bool beats(GameCard previous, CardColor? trump, CardColor? lead);
 
@@ -7,11 +9,8 @@ sealed class GameCard {
 
   Map<String, dynamic> toJson();
 
-  static GameCard? fromJson(Map<String, dynamic> map) {
-    final id = map["id"];
-    if (id == null) {
-      return null;
-    }
+  static GameCard fromJson(Map<String, dynamic> map) {
+    final id = map["id"]!;
 
     switch (id) {
       case "NumberCard":
@@ -21,7 +20,7 @@ sealed class GameCard {
       case "JesterCard":
         return JesterCard.fromJson(map);
       default:
-        return null;
+        throw DeserializationError("Unknown card id: $id");
     }
   }
 }
@@ -80,16 +79,9 @@ class NumberCard extends GameCard {
         "color": color.name,
       };
 
-  static GameCard? fromJson(Map<String, dynamic> map) {
-    final number = map["number"];
-    if (number == null) {
-      return null;
-    }
-
-    final color = map["color"];
-    if (color == null) {
-      return null;
-    }
+  static GameCard fromJson(Map<String, dynamic> map) {
+    final number = map["number"]!;
+    final color = map["color"]!;
     return NumberCard(number, CardColor.fromJson(color));
   }
 }
@@ -118,7 +110,7 @@ class WizardCard extends GameCard {
         "id": "WizardCard",
       };
 
-  static GameCard? fromJson(Map<String, dynamic> map) {
+  static GameCard fromJson(Map<String, dynamic> map) {
     return WizardCard();
   }
 }
@@ -140,7 +132,7 @@ class JesterCard extends GameCard {
         "id": "JesterCard",
       };
 
-  static GameCard? fromJson(Map<String, dynamic> map) {
+  static GameCard fromJson(Map<String, dynamic> map) {
     return JesterCard();
   }
 }

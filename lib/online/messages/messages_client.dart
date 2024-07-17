@@ -14,6 +14,39 @@ sealed class ClientMessage {
     json.addAll({"id": id});
     return json;
   }
+
+  static ClientMessage fromJson(Map<String, dynamic> json) {
+    final id = json["id"];
+    switch (id) {
+      case "SetName":
+        return SetName(json["playerName"]);
+      case "CreateLobby":
+        return CreateLobby(json["lobbyName"]);
+      case "JoinLobby":
+        return JoinLobby(json["lobbyName"]);
+      case "LeaveLobby":
+        return LeaveLobby();
+      case "ReadyToPlay":
+        return ReadyToPlay(json["ready"]);
+      case "GameMessage":
+        return GameMessage(json["playerId"], GameMessageClient.fromJson(json["gameMessage"]));
+      default:
+        throw Exception("Unknown message id: $id");
+    }
+  }
+}
+
+class SetName extends ClientMessage {
+  final String playerName;
+
+  SetName(this.playerName) : super("SetName");
+
+  @override
+  Map<String, dynamic> toJsonImpl() {
+    return {
+      "playerName": playerName,
+    };
+  }
 }
 
 class CreateLobby extends ClientMessage {
@@ -52,24 +85,28 @@ class LeaveLobby extends ClientMessage {
 }
 
 class ReadyToPlay extends ClientMessage {
-  ReadyToPlay() : super("ReadyToPlay");
+  final bool ready;
 
-  @override
-  Map<String, dynamic> toJsonImpl() {
-    return {};
-  }
-}
-
-class GameMessage extends ClientMessage {
-  final Player player; // TODO is player really the best idea?
-  final GameMessageClient gameMessage;
-
-  GameMessage(this.player, this.gameMessage) : super("GameMessage");
+  ReadyToPlay(this.ready) : super("ReadyToPlay");
 
   @override
   Map<String, dynamic> toJsonImpl() {
     return {
-      "player": player.id,
+      "ready": ready,
+    };
+  }
+}
+
+class GameMessage extends ClientMessage {
+  final PlayerId playerId;
+  final GameMessageClient gameMessage;
+
+  GameMessage(this.playerId, this.gameMessage) : super("GameMessage");
+
+  @override
+  Map<String, dynamic> toJsonImpl() {
+    return {
+      "playerId": playerId,
       "gameMessage": gameMessage.toJson(),
     };
   }

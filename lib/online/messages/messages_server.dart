@@ -47,7 +47,7 @@ sealed class LobbyState {
       case "Idle":
         return LobbyStateIdle.fromJsonImpl(map);
       case "InLobby":
-        return InLobby.fromJsonImpl(map);
+        return LobbyStateInLobby.fromJsonImpl(map);
       case "Playing":
         return LobbyStatePlaying.fromJsonImpl(map);
       default:
@@ -99,37 +99,34 @@ class LobbyData {
   }
 }
 
-class InLobby extends LobbyState {
-  final Map<PlayerId, PlayerInLobby> players;
+class LobbyStateInLobby extends LobbyState {
+  final String lobbyName;
+  final List<PlayerInLobby> players;
 
-  InLobby(this.players);
+  LobbyStateInLobby(this.lobbyName, this.players);
 
   static LobbyState fromJsonImpl(Map<String, dynamic> map) {
-    final players = map["players"] as Map<String, dynamic>;
+    final players = map["players"] as List<dynamic>;
 
-    final playerMap = <String, PlayerInLobby>{};
-    players.forEach((key, value) {
-      if (value is! Map<String, dynamic>) {
-        return;
-      }
+    return LobbyStateInLobby(
+      map["lobbyName"] as String,
+      players.map((value) {
+        value as Map<String, dynamic>;
 
-      final name = value["name"];
-      final ready = value["ready"];
-      if (name == null || ready == null) {
-        return;
-      }
+        final name = value["name"] as String;
+        final ready = value["ready"] as bool;
 
-      playerMap[key] = PlayerInLobby(name, ready);
-    });
-
-    return InLobby(playerMap);
+        return PlayerInLobby(name, ready);
+      }).toList(),
+    );
   }
 
   @override
   Map<String, dynamic> toJson() {
     return {
       "id": "InLobby",
-      "players": players.map((key, playerInLobby) => MapEntry(key, playerInLobby.toJson())),
+      "lobbyName": lobbyName,
+      "players": players.map((playerInLobby) => playerInLobby.toJson()),
     };
   }
 }

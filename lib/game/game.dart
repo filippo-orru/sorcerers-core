@@ -39,6 +39,16 @@ class Player extends PlayerState {
   void clearHand() {
     hand.clear();
   }
+
+  static Player fromJson(Map<String, dynamic> json) {
+    final id = json["id"];
+    final name = json["name"];
+    final hand = (json["hand"] as List<dynamic>)
+        .map((card) => GameCard.fromJson(card))
+        .whereType<GameCard>()
+        .toList();
+    return Player(id, name)..hand.addAll(hand);
+  }
 }
 
 class CardOnTable {

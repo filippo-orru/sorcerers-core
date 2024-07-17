@@ -1,4 +1,5 @@
 import 'package:sorcerers_core/game/cards.dart';
+import 'package:sorcerers_core/utils.dart';
 
 sealed class GameMessageClient {
   final String id;
@@ -11,6 +12,28 @@ sealed class GameMessageClient {
       "id": runtimeType.toString(),
       ...toJsonImpl(),
     };
+  }
+
+  static GameMessageClient fromJson(Map<String, dynamic> json) {
+    final id = json["id"];
+    switch (id) {
+      case "StartNewRound":
+        return StartNewRound();
+      case "ShuffleDeck":
+        return ShuffleDeck();
+      case "SetTrumpColor":
+        return SetTrumpColor(CardColor.values.firstWhere((e) => e.toString() == json["color"]));
+      case "SetBid":
+        return SetBid(json["bid"]);
+      case "PlayCard":
+        return PlayCard(GameCard.fromJson(json["card"]));
+      case "ReadyForNextTrick":
+        return ReadyForNextTrick();
+      case "LeaveGame":
+        return LeaveGame();
+      default:
+        throw DeserializationError("Unknown message id: $id");
+    }
   }
 }
 
