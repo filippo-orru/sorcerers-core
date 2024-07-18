@@ -100,15 +100,17 @@ class LobbyData {
 }
 
 class LobbyStateInLobby extends LobbyState {
+  final String myName;
   final String lobbyName;
   final List<PlayerInLobby> players;
 
-  LobbyStateInLobby(this.lobbyName, this.players);
+  LobbyStateInLobby(this.myName, this.lobbyName, this.players);
 
   static LobbyState fromJsonImpl(Map<String, dynamic> map) {
     final players = map["players"] as List<dynamic>;
 
     return LobbyStateInLobby(
+      map["myName"] as String,
       map["lobbyName"] as String,
       players.map((value) {
         value as Map<String, dynamic>;
@@ -125,6 +127,7 @@ class LobbyStateInLobby extends LobbyState {
   Map<String, dynamic> toJson() {
     return {
       "id": "InLobby",
+      "myName": myName,
       "lobbyName": lobbyName,
       "players": players.map((playerInLobby) => playerInLobby.toJson()),
     };
@@ -147,20 +150,25 @@ class PlayerInLobby {
 }
 
 class LobbyStatePlaying extends LobbyState {
+  final String myName;
   final GameState gameState;
 
-  LobbyStatePlaying(this.gameState);
+  LobbyStatePlaying(this.myName, this.gameState);
 
   static LobbyState fromJsonImpl(Map<String, dynamic> map) {
     final gameState = map["gameState"] as Map<String, dynamic>;
 
-    return LobbyStatePlaying(GameState.fromJson(gameState));
+    return LobbyStatePlaying(
+      map["myName"],
+      GameState.fromJson(gameState),
+    );
   }
 
   @override
   Map<String, dynamic> toJson() {
     return {
       "id": "Playing",
+      "myName": myName,
       "gameState": gameState.toJson(),
     };
   }
