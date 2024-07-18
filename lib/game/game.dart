@@ -528,7 +528,7 @@ class GameState {
       RoundStage.values[gameState["roundStage"]],
       cardsOnTable
           .map((cardOnTable) =>
-              CardOnTableState(cardOnTable["playerId"], GameCard.fromJson(cardOnTable["card"])!))
+              CardOnTableState(cardOnTable["playerId"], GameCard.fromJson(cardOnTable["card"])))
           .toList(),
       gameState["currentPlayerId"] as String,
       GameCard.fromJson(gameState["trump"]),
