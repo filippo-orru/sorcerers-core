@@ -129,7 +129,7 @@ class LobbyStateInLobby extends LobbyState {
       "id": "InLobby",
       "myName": myName,
       "lobbyName": lobbyName,
-      "players": players.map((playerInLobby) => playerInLobby.toJson()),
+      "players": players.map((playerInLobby) => playerInLobby.toJson()).toList(),
     };
   }
 }
