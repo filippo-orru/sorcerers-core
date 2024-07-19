@@ -20,21 +20,25 @@ sealed class ServerMessage {
 }
 
 class StateUpdate extends ServerMessage {
-  final LobbyState lobbyState;
+  final LobbyState? lobbyState;
 
   StateUpdate(this.lobbyState) : super("StateUpdate");
 
   static ServerMessage fromJsonImpl(Map<String, dynamic> map) {
-    final lobbyState = LobbyState.fromJson(map["lobbyState"] as Map<String, dynamic>);
-
-    return StateUpdate(lobbyState);
+    final raw = map["lobbyState"];
+    if (raw == null) {
+      return StateUpdate(null);
+    } else {
+      final lobbyState = LobbyState.fromJson(raw as Map<String, dynamic>);
+      return StateUpdate(lobbyState);
+    }
   }
 
   @override
   Map<String, dynamic> toJson() {
     return {
       "id": id,
-      "lobbyState": lobbyState.toJson(),
+      "lobbyState": lobbyState?.toJson(),
     };
   }
 }
