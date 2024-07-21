@@ -107,7 +107,7 @@ class Game with ChangeNotifier {
     }
 
     cardsOnTable.clear();
-    roundStartPlayerIndex = initialPlayerIndex + roundNumber;
+    roundStartPlayerIndex = (initialPlayerIndex + roundNumber) % players.length;
     currentPlayerIndex = roundStartPlayerIndex;
 
     roundScores = {};
