@@ -3,3 +3,5 @@ class DeserializationError implements Exception {
 
   DeserializationError(this.message);
 }
+
+typedef ReconnectId = String;

@@ -11,11 +11,35 @@ sealed class ServerMessage {
   static ServerMessage fromJson(Map<String, dynamic> map) {
     final id = map["id"] as String;
     switch (id) {
+      case "HelloResponse":
+        return HelloResponse.fromJsonImpl(map);
       case "StateUpdate":
         return StateUpdate.fromJsonImpl(map);
       default:
         throw DeserializationError("Unknown message id: $id");
     }
+  }
+}
+
+class HelloResponse extends ServerMessage {
+  final PlayerId playerId;
+  final ReconnectId reconnectId;
+
+  HelloResponse({required this.playerId, required this.reconnectId}) : super("HelloResponse");
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "reconnectId": reconnectId,
+    };
+  }
+
+  static ServerMessage fromJsonImpl(Map<String, dynamic> map) {
+    return HelloResponse(
+      playerId: map["playerId"] as String,
+      reconnectId: map["reconnectId"] as String,
+    );
   }
 }
 
@@ -104,17 +128,15 @@ class LobbyData {
 }
 
 class LobbyStateInLobby extends LobbyState {
-  final String myName;
   final String lobbyName;
   final List<PlayerInLobby> players;
 
-  LobbyStateInLobby(this.myName, this.lobbyName, this.players);
+  LobbyStateInLobby(this.lobbyName, this.players);
 
   static LobbyState fromJsonImpl(Map<String, dynamic> map) {
     final players = map["players"] as List<dynamic>;
 
     return LobbyStateInLobby(
-      map["myName"] as String,
       map["lobbyName"] as String,
       players.map((value) {
         value as Map<String, dynamic>;
@@ -131,7 +153,6 @@ class LobbyStateInLobby extends LobbyState {
   Map<String, dynamic> toJson() {
     return {
       "id": "InLobby",
-      "myName": myName,
       "lobbyName": lobbyName,
       "players": players.map((playerInLobby) => playerInLobby.toJson()).toList(),
     };

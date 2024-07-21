@@ -1,4 +1,5 @@
 import 'package:sorcerers_core/game/game.dart';
+import 'package:sorcerers_core/utils.dart';
 
 import 'game_messages/game_messages_client.dart';
 
@@ -18,6 +19,8 @@ sealed class ClientMessage {
   static ClientMessage fromJson(Map<String, dynamic> json) {
     final id = json["id"];
     switch (id) {
+      case "Hello":
+        return Hello(json["reconnectId"]);
       case "SetName":
         return SetName(json["playerName"]);
       case "CreateLobby":
@@ -33,6 +36,19 @@ sealed class ClientMessage {
       default:
         throw Exception("Unknown message id: $id");
     }
+  }
+}
+
+class Hello extends ClientMessage {
+  final ReconnectId? reconnectId;
+
+  Hello(this.reconnectId) : super("Hello");
+
+  @override
+  Map<String, dynamic> toJsonImpl() {
+    return {
+      "reconnectId": reconnectId,
+    };
   }
 }
 
