@@ -1,6 +1,10 @@
 import 'package:sorcerers_core/utils.dart';
 
 sealed class GameCard {
+  final int cardId;
+
+  GameCard(this.cardId);
+
   bool beats(GameCard previous, CardColor? trump, CardColor? lead);
 
   bool canBePlayed(CardColor? lead);
@@ -23,6 +27,18 @@ sealed class GameCard {
         throw DeserializationError("Unknown card id: $id");
     }
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is GameCard) {
+      return cardId == other.cardId;
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  int get hashCode => cardId.hashCode;
 }
 
 enum CardColor {
@@ -40,7 +56,7 @@ class NumberCard extends GameCard {
   final int number; // 1-13
   final CardColor color;
 
-  NumberCard(this.number, this.color);
+  NumberCard(super.cardId, this.number, this.color);
 
   static int highest = 13;
 
@@ -77,16 +93,21 @@ class NumberCard extends GameCard {
         "id": "NumberCard",
         "number": number,
         "color": color.name,
+        "cardId": cardId,
       };
 
   static GameCard fromJson(Map<String, dynamic> map) {
-    final number = map["number"]!;
-    final color = map["color"]!;
-    return NumberCard(number, CardColor.fromJson(color));
+    return NumberCard(
+      map["cardId"]!,
+      map["number"]!,
+      CardColor.fromJson(map["color"]!),
+    );
   }
 }
 
 class WizardCard extends GameCard {
+  WizardCard(super.cardId);
+
   @override
   bool beats(GameCard previous, CardColor? trump, CardColor? lead) {
     switch (previous) {
@@ -108,14 +129,17 @@ class WizardCard extends GameCard {
   @override
   Map<String, dynamic> toJson() => {
         "id": "WizardCard",
+        "cardId": cardId,
       };
 
   static GameCard fromJson(Map<String, dynamic> map) {
-    return WizardCard();
+    return WizardCard(map["cardId"]!);
   }
 }
 
 class JesterCard extends GameCard {
+  JesterCard(super.cardId);
+
   @override
   bool beats(GameCard previous, CardColor? trump, CardColor? lead) {
     return false;
@@ -130,9 +154,10 @@ class JesterCard extends GameCard {
   @override
   Map<String, dynamic> toJson() => {
         "id": "JesterCard",
+        "cardId": cardId,
       };
 
   static GameCard fromJson(Map<String, dynamic> map) {
-    return JesterCard();
+    return JesterCard(map["cardId"]!);
   }
 }

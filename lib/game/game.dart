@@ -14,11 +14,13 @@ class Deck {
   Deck() : cards = generateCards();
 
   static List<GameCard> generateCards() {
+    var cardId = 0;
+
     final cards = [
       for (final color in CardColor.values)
-        for (var i = 1; i <= NumberCard.highest; i++) NumberCard(i, color),
-      for (var i = 0; i < numberOfWizardCards; i++) WizardCard(),
-      for (var i = 0; i < numberOfJesterCards; i++) JesterCard(),
+        for (var i = 1; i <= NumberCard.highest; i++) NumberCard(cardId++, i, color),
+      for (var i = 0; i < numberOfWizardCards; i++) WizardCard(cardId++),
+      for (var i = 0; i < numberOfJesterCards; i++) JesterCard(cardId++),
     ];
     cards.shuffle();
     return cards;
