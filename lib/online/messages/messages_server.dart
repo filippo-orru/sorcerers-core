@@ -140,11 +140,11 @@ class LobbyStateInLobby extends LobbyState {
       map["lobbyName"] as String,
       players.map((value) {
         value as Map<String, dynamic>;
-
-        final name = value["name"] as String;
-        final ready = value["ready"] as bool;
-
-        return PlayerInLobby(name, ready);
+        return PlayerInLobby(
+          value["id"] as String,
+          value["name"] as String,
+          value["ready"] as bool,
+        );
       }).toList(),
     );
   }
@@ -160,14 +160,16 @@ class LobbyStateInLobby extends LobbyState {
 }
 
 class PlayerInLobby {
+  final PlayerId id;
   final String name;
   final bool ready;
 
-  PlayerInLobby(this.name, this.ready);
+  PlayerInLobby(this.id, this.name, this.ready);
   // final bool me;
 
   Map<String, dynamic> toJson() {
     return {
+      "id": id,
       "name": name,
       "ready": ready,
     };
