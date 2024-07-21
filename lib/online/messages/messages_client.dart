@@ -1,7 +1,7 @@
 import 'package:sorcerers_core/game/game.dart';
 import 'package:sorcerers_core/utils.dart';
 
-import 'game_messages/game_messages_client.dart';
+import 'game_messages_client.dart';
 
 sealed class ClientMessage {
   final String id;

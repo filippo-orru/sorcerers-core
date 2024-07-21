@@ -1,5 +1,5 @@
 import 'package:sorcerers_core/change_notifier.dart';
-import 'package:sorcerers_core/online/messages/game_messages/game_messages_client.dart';
+import 'package:sorcerers_core/online/messages/game_messages_client.dart';
 
 import 'cards.dart';
 
@@ -232,7 +232,9 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  void stop() {}
+  void stop() {
+    // TODO
+  }
 
   GameState toState(PlayerId me) {
     return GameState(
