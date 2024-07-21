@@ -28,14 +28,14 @@ class Deck {
 }
 
 class Player extends PlayerState {
-  Player(String id, String name) : super(id, name, []);
+  Player(String id, String name) : super(id, name, {});
 
-  void playCard(GameCard card) {
-    hand.remove(card);
+  GameCard playCard(CardId cardId) {
+    return hand.remove(cardId)!;
   }
 
   void drawCard(GameCard card) {
-    hand.add(card);
+    hand[card.cardId] = card;
   }
 
   void clearHand() {
@@ -177,7 +177,7 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  void playCard(PlayerId playerId, GameCard card) {
+  void playCard(PlayerId playerId, int cardId) {
     if (roundStage != RoundStage.playing) {
       throw Exception("Not in the playing stage");
     }
@@ -186,7 +186,11 @@ class Game with ChangeNotifier {
       throw Exception("Not the player's turn");
     }
 
-    currentPlayer.playCard(card);
+    if (!currentPlayer.hand.containsKey(cardId)) {
+      throw Exception("Player doesn't have this card");
+    }
+
+    final card = currentPlayer.playCard(cardId);
     cardsOnTable.add(CardOnTable(currentPlayer, card));
 
     if (cardsOnTable.length == players.length) {
@@ -263,7 +267,7 @@ class Game with ChangeNotifier {
 
   void onMessage({required PlayerId fromPlayerId, required GameMessageClient message}) {
     var _ = switch (message) {
-      PlayCard() => playCard(fromPlayerId, message.card),
+      PlayCard() => playCard(fromPlayerId, message.cardId),
       StartNewRound() => startNewRound(incrementRound: true),
       ShuffleDeck() => shuffleAndGiveCards(),
       SetTrumpColor() => setTrumpColor(message.color),
@@ -385,7 +389,7 @@ typedef PlayerId = String;
 class PlayerState {
   final PlayerId id;
   final String name;
-  final List<GameCard> hand;
+  final Map<CardId, GameCard> hand;
 
   PlayerState(this.id, this.name, this.hand);
 
@@ -396,7 +400,7 @@ class PlayerState {
     } else {
       // If the player has no card of the lead color, they can play any card
       final hasLeadColorCard =
-          hand.any((handCard) => handCard is NumberCard && handCard.color == leadColor);
+          hand.values.any((handCard) => handCard is NumberCard && handCard.color == leadColor);
       return !hasLeadColorCard;
     }
   }
@@ -405,7 +409,7 @@ class PlayerState {
     return {
       "id": id,
       "name": name,
-      "hand": hand.map((card) => card.toJson()).toList(),
+      "hand": hand.values.map((card) => card.toJson()).toList(),
     };
   }
 
@@ -413,7 +417,10 @@ class PlayerState {
     return PlayerState(
       map["id"] as String,
       map["name"] as String,
-      (map["hand"] as List<dynamic>).map((map) => GameCard.fromJson(map)).toList(),
+      Map.fromEntries((map["hand"] as List<dynamic>).map((map) {
+        final card = GameCard.fromJson(map);
+        return MapEntry(card.cardId, card);
+      })),
     );
   }
 }
@@ -466,7 +473,7 @@ class GameState {
 
   static GameState loading() {
     return GameState(
-      {"": PlayerState("", "", [])},
+      {"": PlayerState("", "", {})},
       0,
       GameScore(),
       RoundStage.bidding,

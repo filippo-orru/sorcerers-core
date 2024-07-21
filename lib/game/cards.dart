@@ -1,7 +1,9 @@
 import 'package:sorcerers_core/utils.dart';
 
+typedef CardId = int;
+
 sealed class GameCard {
-  final int cardId;
+  final CardId cardId;
 
   GameCard(this.cardId);
 

@@ -22,11 +22,11 @@ sealed class GameMessageClient {
       case "ShuffleDeck":
         return ShuffleDeck();
       case "SetTrumpColor":
-        return SetTrumpColor(CardColor.values.firstWhere((e) => e.toString() == json["color"]));
+        return SetTrumpColor(CardColor.values.firstWhere((e) => e.name == json["color"]));
       case "SetBid":
         return SetBid(json["bid"]);
       case "PlayCard":
-        return PlayCard(GameCard.fromJson(json["card"]));
+        return PlayCard(json["cardId"]);
       case "ReadyForNextTrick":
         return ReadyForNextTrick();
       case "LeaveGame":
@@ -82,14 +82,14 @@ class SetBid extends GameMessageClient {
 }
 
 class PlayCard extends GameMessageClient {
-  final GameCard card;
+  final int cardId;
 
-  PlayCard(this.card) : super("PlayCard");
+  PlayCard(this.cardId) : super("PlayCard");
 
   @override
   Map<String, dynamic> toJsonImpl() {
     return {
-      "card": card.toJson(),
+      "cardId": cardId,
     };
   }
 }
