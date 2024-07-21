@@ -32,7 +32,7 @@ enum CardColor {
   blue;
 
   static CardColor fromJson(String color) {
-    return CardColor.values.firstWhere((element) => element.toString() == color);
+    return CardColor.values.firstWhere((element) => element.name == color);
   }
 }
 

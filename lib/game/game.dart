@@ -39,16 +39,6 @@ class Player extends PlayerState {
   void clearHand() {
     hand.clear();
   }
-
-  static Player fromJson(Map<String, dynamic> json) {
-    final id = json["id"];
-    final name = json["name"];
-    final hand = (json["hand"] as List<dynamic>)
-        .map((card) => GameCard.fromJson(card))
-        .whereType<GameCard>()
-        .toList();
-    return Player(id, name)..hand.addAll(hand);
-  }
 }
 
 class CardOnTable {
@@ -421,7 +411,7 @@ class PlayerState {
     return PlayerState(
       map["id"] as String,
       map["name"] as String,
-      (map["hand"] as List<Map<String, dynamic>>).map((map) => GameCard.fromJson(map)).toList(),
+      (map["hand"] as List<dynamic>).map((map) => GameCard.fromJson(map)).toList(),
     );
   }
 }
@@ -516,7 +506,7 @@ class GameState {
       "players": players.values.map((playerState) => playerState.toJson()).toList(),
       "roundNumber": roundNumber,
       "gameScore": gameScore.toJson(),
-      "roundStage": roundStage.index,
+      "roundStage": roundStage.name,
       "cardsOnTable": cardsOnTable.map((cardOnTable) => cardOnTable.toJson()).toList(),
       "currentPlayerId": currentPlayerId,
       "trump": trump?.toJson(),
@@ -537,16 +527,18 @@ class GameState {
       ),
       gameState["roundNumber"],
       GameScore.fromJson(gameState["gameScore"]),
-      RoundStage.values[gameState["roundStage"]],
+      RoundStage.values.firstWhere((s) => s.name == gameState["roundStage"]),
       (gameState["cardsOnTable"] as List<dynamic>)
           .map((cardOnTable) =>
               CardOnTableState(cardOnTable["playerId"], GameCard.fromJson(cardOnTable["card"])))
           .toList(),
       gameState["currentPlayerId"] as String,
-      GameCard.fromJson(gameState["trump"]),
-      CardColor.fromJson(gameState["trumpColor"]),
-      CardColor.fromJson(gameState["leadColor"]),
-      gameState["roundScores"],
+      gameState["trump"] == null ? null : GameCard.fromJson(gameState["trump"]),
+      gameState["trumpColor"] == null ? null : CardColor.fromJson(gameState["trumpColor"]),
+      gameState["leadColor"] == null ? null : CardColor.fromJson(gameState["leadColor"]),
+      (gameState["roundScores"] as Map<String, dynamic>).map(
+        (playerId, map) => MapEntry(playerId, RoundScore.fromJson(map)),
+      ),
       (_) {}, // Will be set later
     );
   }
