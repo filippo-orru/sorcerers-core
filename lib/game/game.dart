@@ -49,9 +49,7 @@ class CardOnTable {
 }
 
 class Game with ChangeNotifier {
-  Game(List<String> playerNames)
-      : players = playerNames.indexed.map((it) => Player(it.$1.toString(), it.$2)).toList(),
-        initialPlayerIndex = 0 {
+  Game(this.players) : initialPlayerIndex = 0 {
     startNewRound(incrementRound: false);
   }
 
@@ -236,7 +234,7 @@ class Game with ChangeNotifier {
 
   void stop() {}
 
-  GameState toState(PlayerId me, void Function(GameMessageClient message) onMessage) {
+  GameState toState(PlayerId me) {
     return GameState(
       Map.fromEntries(
         players
@@ -254,7 +252,6 @@ class Game with ChangeNotifier {
       trumpColor,
       leadColor,
       roundScores.map((player, v) => MapEntry(player.id, v)),
-      onMessage,
     );
   }
 
@@ -448,8 +445,6 @@ class GameState {
   final CardColor? leadColor;
   final Map<PlayerId, RoundScore?> roundScores;
 
-  void Function(GameMessageClient message) sendMessage;
-
   GameState(
     this.players,
     this.roundNumber,
@@ -461,8 +456,7 @@ class GameState {
     this.trump,
     this.trumpColor,
     this.leadColor,
-    this.roundScores,
-    this.sendMessage, {
+    this.roundScores, {
     this.isLoading = false,
   });
 
@@ -479,7 +473,6 @@ class GameState {
       null,
       null,
       {},
-      (_) {},
       isLoading: true,
     );
   }
@@ -546,7 +539,6 @@ class GameState {
       (gameState["roundScores"] as Map<String, dynamic>).map(
         (playerId, map) => MapEntry(playerId, RoundScore.fromJson(map)),
       ),
-      (_) {}, // Will be set later
     );
   }
 }
