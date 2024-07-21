@@ -408,6 +408,22 @@ class PlayerState {
       return !hasLeadColorCard;
     }
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "hand": hand.map((card) => card.toJson()).toList(),
+    };
+  }
+
+  static PlayerState fromJson(Map<String, dynamic> map) {
+    return PlayerState(
+      map["id"] as String,
+      map["name"] as String,
+      (map["hand"] as List<Map<String, dynamic>>).map((map) => GameCard.fromJson(map)).toList(),
+    );
+  }
 }
 
 class CardOnTableState {
@@ -497,7 +513,7 @@ class GameState {
 
   Map<String, dynamic> toJson() {
     return {
-      "players": players.map((playerId, playerState) => MapEntry(playerId, playerState)),
+      "players": players.values.map((playerState) => playerState.toJson()).toList(),
       "roundNumber": roundNumber,
       "gameScore": gameScore.toJson(),
       "roundStage": roundStage.index,
@@ -512,21 +528,17 @@ class GameState {
   }
 
   static GameState fromJson(Map<String, dynamic> gameState) {
-    var cardsOnTable = gameState["cardsOnTable"] as List<dynamic>;
-    var playersRaw = gameState["players"] as Map<String, dynamic>;
-    var players = Map.fromEntries(
-      playersRaw.entries.map((entry) {
-        final playerId = entry.key;
-        final player = entry.value;
-        return MapEntry(playerId, PlayerState(playerId, player["name"], []));
-      }),
-    );
     return GameState(
-      players,
+      Map.fromEntries(
+        (gameState["players"] as List<dynamic>).map((map) {
+          final playerState = PlayerState.fromJson(map);
+          return MapEntry(playerState.id, playerState);
+        }),
+      ),
       gameState["roundNumber"],
       GameScore.fromJson(gameState["gameScore"]),
       RoundStage.values[gameState["roundStage"]],
-      cardsOnTable
+      (gameState["cardsOnTable"] as List<dynamic>)
           .map((cardOnTable) =>
               CardOnTableState(cardOnTable["playerId"], GameCard.fromJson(cardOnTable["card"])))
           .toList(),
