@@ -156,16 +156,16 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  void setBid(Player player, int bid) {
+  void setBid(PlayerId playerId, int bid) {
     if (roundStage != RoundStage.bidding) {
       throw Exception("Not in the bidding stage");
     }
 
-    if (player != currentPlayer) {
+    if (playerId != currentPlayer.id) {
       throw Exception("Not the player's turn");
     }
 
-    roundScores[player] = RoundScore(player.id, bid);
+    roundScores[currentPlayer] = RoundScore(currentPlayer.id, bid);
 
     if (roundScores.length == players.length) {
       roundStage = RoundStage.playing;
@@ -177,17 +177,17 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  void playCard(Player player, GameCard card) {
+  void playCard(PlayerId playerId, GameCard card) {
     if (roundStage != RoundStage.playing) {
       throw Exception("Not in the playing stage");
     }
 
-    if (player != currentPlayer) {
+    if (playerId != currentPlayer.id) {
       throw Exception("Not the player's turn");
     }
 
     currentPlayer.playCard(card);
-    cardsOnTable.add(CardOnTable(player, card));
+    cardsOnTable.add(CardOnTable(currentPlayer, card));
 
     if (cardsOnTable.length == players.length) {
       // End of the trick
@@ -236,7 +236,7 @@ class Game with ChangeNotifier {
 
   void stop() {}
 
-  GameState toState(void Function(GameMessageClient message) onMessage) {
+  GameState toState(PlayerId me, void Function(GameMessageClient message) onMessage) {
     return GameState(
       Map.fromEntries(
         players
@@ -248,6 +248,7 @@ class Game with ChangeNotifier {
       cardsOnTable
           .map((cardOnTable) => CardOnTableState(cardOnTable.player.id, cardOnTable.card))
           .toList(),
+      me,
       currentPlayer.id,
       trump,
       trumpColor,
@@ -259,13 +260,13 @@ class Game with ChangeNotifier {
 
   void _nextPlayer() => currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 
-  void onMessage(GameMessageClient message) {
+  void onMessage({required PlayerId fromPlayerId, required GameMessageClient message}) {
     var _ = switch (message) {
-      PlayCard() => playCard(currentPlayer, message.card),
+      PlayCard() => playCard(fromPlayerId, message.card),
       StartNewRound() => startNewRound(incrementRound: true),
       ShuffleDeck() => shuffleAndGiveCards(),
       SetTrumpColor() => setTrumpColor(message.color),
-      SetBid() => setBid(currentPlayer, message.bid),
+      SetBid() => setBid(fromPlayerId, message.bid),
       ReadyForNextTrick() => readyForNextTrick(),
       LeaveGame() => stop(),
     };
@@ -430,6 +431,7 @@ class CardOnTableState {
   }
 }
 
+/// Game state is always from the perspective of [myPlayerId]
 class GameState {
   final bool isLoading;
   final Map<PlayerId, PlayerState> players;
@@ -437,6 +439,7 @@ class GameState {
   int get cardsForRound => roundNumber + 1;
   final GameScore gameScore;
 
+  final PlayerId myPlayerId;
   final PlayerId currentPlayerId;
   final RoundStage roundStage;
   final List<CardOnTableState> cardsOnTable;
@@ -453,6 +456,7 @@ class GameState {
     this.gameScore,
     this.roundStage,
     this.cardsOnTable,
+    this.myPlayerId,
     this.currentPlayerId,
     this.trump,
     this.trumpColor,
@@ -469,6 +473,7 @@ class GameState {
       GameScore(),
       RoundStage.bidding,
       [],
+      "",
       "",
       null,
       null,
@@ -508,6 +513,7 @@ class GameState {
       "gameScore": gameScore.toJson(),
       "roundStage": roundStage.name,
       "cardsOnTable": cardsOnTable.map((cardOnTable) => cardOnTable.toJson()).toList(),
+      "myPlayerId": myPlayerId,
       "currentPlayerId": currentPlayerId,
       "trump": trump?.toJson(),
       "trumpColor": trumpColor?.name,
@@ -532,6 +538,7 @@ class GameState {
           .map((cardOnTable) =>
               CardOnTableState(cardOnTable["playerId"], GameCard.fromJson(cardOnTable["card"])))
           .toList(),
+      gameState["myPlayerId"] as String,
       gameState["currentPlayerId"] as String,
       gameState["trump"] == null ? null : GameCard.fromJson(gameState["trump"]),
       gameState["trumpColor"] == null ? null : CardColor.fromJson(gameState["trumpColor"]),
