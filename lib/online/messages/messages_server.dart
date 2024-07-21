@@ -177,25 +177,20 @@ class PlayerInLobby {
 }
 
 class LobbyStatePlaying extends LobbyState {
-  final String myName;
   final GameState gameState;
 
-  LobbyStatePlaying(this.myName, this.gameState);
+  LobbyStatePlaying(this.gameState);
 
   static LobbyState fromJsonImpl(Map<String, dynamic> map) {
     final gameState = map["gameState"] as Map<String, dynamic>;
 
-    return LobbyStatePlaying(
-      map["myName"],
-      GameState.fromJson(gameState),
-    );
+    return LobbyStatePlaying(GameState.fromJson(gameState));
   }
 
   @override
   Map<String, dynamic> toJson() {
     return {
       "id": "Playing",
-      "myName": myName,
       "gameState": gameState.toJson(),
     };
   }
