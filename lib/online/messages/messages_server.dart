@@ -131,8 +131,9 @@ class LobbyData {
 class LobbyStateInLobby extends LobbyState {
   final String lobbyName;
   final List<PlayerInLobby> players;
+  final String? message;
 
-  LobbyStateInLobby(this.lobbyName, this.players);
+  LobbyStateInLobby(this.lobbyName, this.players, this.message);
 
   static LobbyState fromJsonImpl(Map<String, dynamic> map) {
     final players = map["players"] as List<dynamic>;
@@ -147,6 +148,7 @@ class LobbyStateInLobby extends LobbyState {
           value["ready"] as bool,
         );
       }).toList(),
+      map["message"] as String?,
     );
   }
 
@@ -156,6 +158,7 @@ class LobbyStateInLobby extends LobbyState {
       "id": "InLobby",
       "lobbyName": lobbyName,
       "players": players.map((playerInLobby) => playerInLobby.toJson()).toList(),
+      "message": message,
     };
   }
 }
