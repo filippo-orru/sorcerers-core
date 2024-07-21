@@ -439,7 +439,7 @@ class GameState {
   final CardColor? leadColor;
   final Map<PlayerId, RoundScore?> roundScores;
 
-  void Function(GameMessageClient message) sendIntent;
+  void Function(GameMessageClient message) sendMessage;
 
   GameState(
     this.players,
@@ -452,7 +452,7 @@ class GameState {
     this.trumpColor,
     this.leadColor,
     this.roundScores,
-    this.sendIntent, {
+    this.sendMessage, {
     this.isLoading = false,
   });
 

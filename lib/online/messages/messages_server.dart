@@ -31,6 +31,7 @@ class HelloResponse extends ServerMessage {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
+      "playerId": playerId,
       "reconnectId": reconnectId,
     };
   }
