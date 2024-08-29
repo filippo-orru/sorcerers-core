@@ -3,6 +3,8 @@ import 'package:sorcerers_core/online/messages/game_messages_client.dart';
 
 import 'cards.dart';
 
+const lobbyMinNumberOfPlayers = 2; // TODO 3
+
 class Deck {
   final List<GameCard> cards;
 
