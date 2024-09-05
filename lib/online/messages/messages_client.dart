@@ -31,6 +31,8 @@ sealed class ClientMessage {
         return LeaveLobby();
       case "ReadyToPlay":
         return ReadyToPlay(json["ready"]);
+      case "SetConfiguration":
+        return SetConfiguration(GameConfiguration.fromJson(json["configuration"]));
       case "GameMessage":
         return GameMessage(json["playerId"], GameMessageClient.fromJson(json["gameMessage"]));
       default:
@@ -109,6 +111,19 @@ class ReadyToPlay extends ClientMessage {
   Map<String, dynamic> toJsonImpl() {
     return {
       "ready": ready,
+    };
+  }
+}
+
+class SetConfiguration extends ClientMessage {
+  final GameConfiguration configuration;
+
+  SetConfiguration(this.configuration) : super("SetConfiguration");
+
+  @override
+  Map<String, dynamic> toJsonImpl() {
+    return {
+      "configuration": configuration.toJson(),
     };
   }
 }

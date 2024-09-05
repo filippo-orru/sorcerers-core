@@ -451,7 +451,7 @@ class CardOnTableState {
 class GameConfiguration {
   final bool useCanadianRule;
 
-  GameConfiguration({required this.useCanadianRule});
+  GameConfiguration({this.useCanadianRule = false});
 
   Map<String, dynamic> toJson() {
     return {
