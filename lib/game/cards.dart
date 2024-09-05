@@ -7,7 +7,7 @@ sealed class GameCard {
 
   GameCard(this.cardId);
 
-  bool beats(GameCard previous, CardColor? trump, CardColor? lead);
+  bool beats(GameCard highest, CardColor? trump);
 
   bool canBePlayed(CardColor? lead);
 
@@ -63,14 +63,12 @@ class NumberCard extends GameCard {
   static int highest = 13;
 
   @override
-  bool beats(GameCard previous, CardColor? trump, CardColor? lead) {
-    switch (previous) {
+  bool beats(GameCard highest, CardColor? trump) {
+    switch (highest) {
       case NumberCard():
-        if (color == previous.color) {
-          return number > previous.number;
+        if (color == highest.color) {
+          return number > highest.number;
         } else if (color == trump) {
-          return true;
-        } else if (color == lead) {
           return true;
         } else {
           return false;
@@ -111,8 +109,8 @@ class WizardCard extends GameCard {
   WizardCard(super.cardId);
 
   @override
-  bool beats(GameCard previous, CardColor? trump, CardColor? lead) {
-    switch (previous) {
+  bool beats(GameCard highest, CardColor? trump) {
+    switch (highest) {
       case NumberCard():
         return true;
       case WizardCard():
@@ -143,8 +141,8 @@ class JesterCard extends GameCard {
   JesterCard(super.cardId);
 
   @override
-  bool beats(GameCard previous, CardColor? trump, CardColor? lead) {
-    return false;
+  bool beats(GameCard highest, CardColor? trump) {
+    return highest is JesterCard; // Jester only beats previous Jester
   }
 
   @override

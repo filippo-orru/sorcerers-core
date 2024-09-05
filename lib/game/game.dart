@@ -53,12 +53,14 @@ class CardOnTable {
 }
 
 class Game with ChangeNotifier {
-  Game(this.players) : initialPlayerIndex = 0 {
+  Game(this.players, this.configuration) : initialPlayerIndex = 0 {
     startNewRound(incrementRound: false);
   }
 
   final List<Player> players;
   final int initialPlayerIndex;
+  final GameConfiguration configuration;
+
   late int roundStartPlayerIndex = initialPlayerIndex;
   final GameScore gameScore = GameScore();
   int get totalRoundsCount => (Deck.size / players.length).floor();
@@ -167,6 +169,10 @@ class Game with ChangeNotifier {
       throw Exception("Not the player's turn");
     }
 
+    // if (!canBid(playerId, bid)) {
+    //   throw Exception("Invalid bid");
+    // }
+
     roundScores[currentPlayer] = RoundScore(currentPlayer.id, bid);
 
     if (roundScores.length == players.length) {
@@ -226,7 +232,7 @@ class Game with ChangeNotifier {
         winningCard = cardOnTable;
       } else {
         final card = cardOnTable.card;
-        if (card.beats(winningCard.card, trumpColor, leadColor)) {
+        if (card.beats(winningCard.card, trumpColor)) {
           winningCard = cardOnTable;
         }
       }
@@ -262,6 +268,7 @@ class Game with ChangeNotifier {
       trumpColor,
       leadColor,
       roundScores.map((player, v) => MapEntry(player.id, v)),
+      configuration,
     );
   }
 
@@ -441,6 +448,22 @@ class CardOnTableState {
   }
 }
 
+class GameConfiguration {
+  final bool useCanadianRule;
+
+  GameConfiguration({required this.useCanadianRule});
+
+  Map<String, dynamic> toJson() {
+    return {
+      "useCanadianRule": useCanadianRule,
+    };
+  }
+
+  static GameConfiguration fromJson(Map<String, dynamic> map) {
+    return GameConfiguration(useCanadianRule: map["useCanadianRule"]);
+  }
+}
+
 /// Game state is always from the perspective of [myPlayerId]
 class GameState {
   final bool isLoading;
@@ -457,6 +480,7 @@ class GameState {
   final CardColor? trumpColor;
   final CardColor? leadColor;
   final Map<PlayerId, RoundScore?> roundScores;
+  final GameConfiguration configuration;
 
   GameState(
     this.players,
@@ -469,7 +493,8 @@ class GameState {
     this.trump,
     this.trumpColor,
     this.leadColor,
-    this.roundScores, {
+    this.roundScores,
+    this.configuration, {
     this.isLoading = false,
   });
 
@@ -486,6 +511,7 @@ class GameState {
       null,
       null,
       {},
+      GameConfiguration(useCanadianRule: false),
       isLoading: true,
     );
   }
@@ -504,12 +530,29 @@ class GameState {
         winningCard = cardOnTable;
       } else {
         final card = cardOnTable.card;
-        if (card.beats(winningCard.card, trumpColor, leadColor)) {
+        if (card.beats(winningCard.card, trumpColor)) {
           winningCard = cardOnTable;
         }
       }
     }
     return winningCard;
+  }
+
+  /// Only relevant for the Canadian rule, not for 'is my turn' or 'bid within valid range'.
+  bool canBid(PlayerId playerId, int bid) {
+    if (configuration.useCanadianRule) {
+      if (roundScores.length == players.length - 1) {
+        // Last player to bid can't bid a number that would make the sum of all bids equal to the number of possible tricks this round
+        final sumOfBids =
+            roundScores.values.map((score) => score?.bid ?? 0).reduce((a, b) => a + b);
+        return sumOfBids + bid != cardsForRound;
+      } else {
+        // Any other player can bid any number
+        return true;
+      }
+    } else {
+      return true;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -526,6 +569,7 @@ class GameState {
       "leadColor": leadColor?.name,
       "roundScores":
           roundScores.map((playerId, roundScore) => MapEntry(playerId, roundScore?.toJson())),
+      "configuration": configuration.toJson(),
     };
   }
 
@@ -552,6 +596,7 @@ class GameState {
       (gameState["roundScores"] as Map<String, dynamic>).map(
         (playerId, map) => MapEntry(playerId, RoundScore.fromJson(map)),
       ),
+      GameConfiguration.fromJson(gameState["configuration"]),
     );
   }
 }
