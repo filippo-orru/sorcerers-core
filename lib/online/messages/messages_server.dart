@@ -146,6 +146,7 @@ class LobbyStateInLobby extends LobbyState {
           value["id"] as String,
           value["name"] as String,
           value["ready"] as bool,
+          value["isOwner"] as bool,
         );
       }).toList(),
       map["message"] as String?,
@@ -167,8 +168,9 @@ class PlayerInLobby {
   final PlayerId id;
   final String name;
   final bool ready;
+  final bool isOwner;
 
-  PlayerInLobby(this.id, this.name, this.ready);
+  PlayerInLobby(this.id, this.name, this.ready, this.isOwner);
   // final bool me;
 
   Map<String, dynamic> toJson() {
@@ -176,6 +178,7 @@ class PlayerInLobby {
       "id": id,
       "name": name,
       "ready": ready,
+      "isOwner": isOwner,
     };
   }
 }
